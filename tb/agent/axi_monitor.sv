@@ -1,7 +1,7 @@
 class axi_monitor extends uvm_monitor;
 	uvm_analysis_port #(axi_seq_item) item_collect_port;
 	axi_seq_item mon_item;
-
+	int master_id;
 	`uvm_component_utils(axi_monitor);
 	
 	virtual axi_if axi_vif;
@@ -16,6 +16,8 @@ class axi_monitor extends uvm_monitor;
 		`uvm_info(get_full_name(), "INSIDE MONITOR BUILD PHASE", UVM_MEDIUM);
 		if (!uvm_config_db#(virtual axi_if):: get(this, "", "vif", axi_vif))
 			`uvm_fatal(get_type_name(), "Not Set at Top Level");
+		if(!uvm_config_db#(int)::get(this, "", "master_id", master_id))
+			`uvm_fatal(get_type_name(), "NOT SET AT TOP LEVEL");
 	endfunction
 
 	function void connect_phase(uvm_phase phase);
@@ -94,6 +96,7 @@ class axi_monitor extends uvm_monitor;
 			`uvm_info(get_full_name(), "B VALID READY HANDSHAKE", UVM_LOW);
 			mon_item.bid<=axi_vif.bid;
 			mon_item.bresp<=axi_vif.bresp;
+			mon_item.master_id=master_id;
 			item_collect_port.write(mon_item);
 		end
 	endtask
@@ -122,6 +125,7 @@ class axi_monitor extends uvm_monitor;
 		mon_item.rid=axi_vif.rid;
 		mon_item.rdata=rdata_q;
 		mon_item.rresp=rresp_q;
+		mon_item.master_id=master_id;
 		item_collect_port.write(mon_item);
 		`uvm_info(get_full_name(), $sformatf("MONITOR RDATA=%0h", mon_item.rdata), UVM_LOW)
 	end	

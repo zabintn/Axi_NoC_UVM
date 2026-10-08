@@ -17,6 +17,11 @@ class axi_concurrency_test extends axi_base_test;
 			cseq.araddr = 32'h12; 
 			cseq.aresetn = 1;
     			cseq.start(env_o.agt[0].seqr);
+ 			cseq.awaddr = 32'h10; 
+			cseq.awlen = 8'd4; 
+			cseq.araddr = 32'h10; 
+			cseq.aresetn = 1;
+			cseq.start(env_o.agt[2].seqr);
   		end
 
   		

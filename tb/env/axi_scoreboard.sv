@@ -57,11 +57,11 @@ class axi_scoreboard extends uvm_scoreboard;
 						case(sb_item.awburst)
 							2'b00: begin
 								expected_mem[sb_item.awaddr]=sb_item.wdata[i];
-								`uvm_info(get_full_name(), $sformatf("MEMORY WRITE=%0h", expected_mem[sb_item.awaddr]), UVM_LOW)
+								`uvm_info(get_full_name(), $sformatf("MASTER %0d MEMORY WRITE=%0h", sb_item.master_id, expected_mem[sb_item.awaddr]), UVM_LOW)
 							end
 							2'b01: begin
 								expected_mem[sb_item.awaddr+i*(1<<sb_item.awsize)]=sb_item.wdata[i];
-								`uvm_info(get_full_name(), $sformatf("MEMORY WRITE=%0h", expected_mem[sb_item.awaddr+i*(1<<sb_item.awsize)]), UVM_LOW)
+								`uvm_info(get_full_name(), $sformatf("MASTER %0d MEMORY WRITE=%0h", sb_item.master_id, expected_mem[sb_item.awaddr+i*(1<<sb_item.awsize)]), UVM_LOW)
 								end
 							2'b10: begin
 								int num_bytes   = 1 << sb_item.awsize;
@@ -72,7 +72,7 @@ class axi_scoreboard extends uvm_scoreboard;
                								addr -= total_bytes;
 
         							expected_mem[addr] = sb_item.wdata[i];
-								`uvm_info(get_full_name(), $sformatf("MEMORY WRITE=%0h", expected_mem[addr]), UVM_LOW)
+								`uvm_info(get_full_name(), $sformatf("MASTER %0d MEMORY WRITE=%0h", sb_item.master_id, expected_mem[addr]), UVM_LOW)
 								end
 						endcase	
 					end
@@ -106,7 +106,7 @@ class axi_scoreboard extends uvm_scoreboard;
 		id=sb_item.awid;
 		wait (exp_q.exists(id) && exp_q[id].size() > 0);
 		exp=exp_q[sb_item.awid].pop_front();	
-		check_cond(sb_item.bresp==exp.bresp, "BRESP (WRITE RESPONSE)", $sformatf("%0b", exp.bresp), $sformatf("%0b", sb_item.bresp));
+		check_cond(sb_item.bresp==exp.bresp, $sformatf(" MASTER %0d BRESP (WRITE RESPONSE)", sb_item.master_id), $sformatf("%0b", exp.bresp), $sformatf("%0b", sb_item.bresp));
 		
 	endtask
 
@@ -123,12 +123,8 @@ class axi_scoreboard extends uvm_scoreboard;
 
 		for(int i=0; i<(sb_item.arlen + 1); i++) begin
 			`uvm_info(get_full_name(), $sformatf("rdata=%0h", sb_item.rdata[i]), UVM_MEDIUM)
-			if(sb_item.rresp[i]==exp.rresp[i]) 
-				`uvm_info(get_full_name(), $sformatf("MATCH id=%0h", sb_item.arid), UVM_MEDIUM)
-			else begin
-				`uvm_error(get_full_name(), $sformatf("MISMATCH id=%0h exp=%0b act=%0b", sb_item.arid, exp.rresp[i], sb_item.rresp[i]));	
-				fail_count++;
-			end
+			check_cond(sb_item.rresp[i]==exp.rresp[i], $sformatf(" MASTER %0d RRESP (READ RESPONSE)", 
+					sb_item.master_id), $sformatf("%0b", exp.rresp[i]), $sformatf("%0b", sb_item.rresp[i]));
 		
 			case (sb_item.arburst)
         			2'b00: addr = sb_item.araddr;
@@ -146,12 +142,7 @@ class axi_scoreboard extends uvm_scoreboard;
 
 			exp_data = expected_mem.exists(addr) ? expected_mem[addr] : '0;
 			
-			if (sb_item.rdata[i] == exp_data)
-				`uvm_info(get_full_name(), $sformatf("BEAT %0d MATCH", i), UVM_MEDIUM)
-			else begin
-				`uvm_error(get_full_name(), $sformatf("BEAT %0d MISMATCH addr=%0h exp=%0h act=%0h", i, addr, exp_data, sb_item.rdata[i]))
-				fail_count++;
-			end
+			check_cond(sb_item.rdata[i]==exp_data,  $sformatf("MASTER %0d READ DATA BEAT AT ADDRESS %0h", sb_item.master_id, addr), $sformatf("exp=%0h", exp_data), $sformatf("%0h",  sb_item.rdata[i]));
 
 		end
 	endtask

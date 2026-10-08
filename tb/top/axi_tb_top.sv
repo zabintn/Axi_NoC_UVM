@@ -44,6 +44,7 @@ for(genvar i=0; i<MASTER_NUM; i++) begin
 	
 	initial begin
 		uvm_config_db#(virtual axi_if) :: set(uvm_root :: get(), $sformatf("uvm_test_top.env_o.agt[%0d].*", i), "vif", axi_vif[i]);
+		uvm_config_db#(int) :: set(uvm_root :: get(), $sformatf("uvm_test_top.env_o.agt[%0d].*", i), "master_id", i);
 	end
 end
 
