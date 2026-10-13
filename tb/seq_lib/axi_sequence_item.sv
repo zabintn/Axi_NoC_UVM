@@ -1,8 +1,9 @@
 class axi_seq_item extends uvm_sequence_item;
 
-	 rand bit axi_op;
-	 rand bit aresetn;
 
+ 	 rand bit axi_op;
+	 bit aresetn=1;
+	 int unsigned master_id;
 	 //AW CHANNEL
 
 	 rand bit [ADDR_WIDTH-1:0]   awaddr;
@@ -37,18 +38,26 @@ class axi_seq_item extends uvm_sequence_item;
 
 
 	 localparam bit [2:0] MAX_SIZE = $clog2(DATA_WIDTH/8);
-
-	 constraint rsv_burst { awburst!= 2'b11; }
-	 constraint fixed_burst_len {if (awburst==2'b00)	
+constraint c_sz { awsize <= 2; arsize <= 2; }
+	constraint rsv_wr_burst { awburst!= 2'b11; }
+	constraint rsv_rd_burst { arburst!= 2'b11; }
+	constraint fixed_burst_len {if (awburst==2'b00)	
 	 				awlen<=15;
+				if (arburst==2'b00)
+					arlen<=15;
 				}
+
 	constraint incr_burst_len {if (awburst==2'b01) 
 					awlen<=255;
+				if (arburst==2'b01)
+					arlen<=255;
 				}
 	constraint wrap_burst_len {if (awburst==2'b10)
 					awlen inside {1, 3, 7, 15};
+				if (arburst==2'b10)
+					arlen inside {1, 3, 7, 15};
+
 				}
-	constraint size_cond {awsize <= MAX_SIZE;}
 	
 	constraint c_w_size {
         if (axi_op == 0) 
@@ -61,7 +70,25 @@ class axi_seq_item extends uvm_sequence_item;
        		wstrb.size() == 0; awlen == 0; }
 	}	
 
-	`uvm_object_utils_begin(axi_seq_item)
+	constraint c_addr {
+		awaddr inside {[BASE0:TOP0], [BASE1:TOP1]};
+		araddr inside {[BASE0:TOP0], [BASE1:TOP1]};
+		} /*
+	constraint c_wrap_align {
+		if (awburst == 2'b10) (awaddr & ((1 << awsize) - 1)) == 0;
+		if (arburst == 2'b10) (araddr & ((1 << arsize) - 1)) == 0;
+		}
+
+	constraint c_4k {
+		if (awburst == 2'b01) awaddr[11:0] + ((awlen + 1) << awsize) <= 13'h1000;
+		if (arburst == 2'b01) araddr[11:0] + ((arlen + 1) << arsize) <= 13'h1000;
+		}
+	constraint c_short { soft awlen inside {[0:15]}; soft arlen inside {[0:15]}; }
+*/
+
+
+	`uvm_object_utils_begin(axi_seq_item)	
+	`uvm_field_int(master_id, UVM_ALL_ON)
 	`uvm_field_int(axi_op, UVM_ALL_ON)
 	`uvm_field_int(aresetn, UVM_ALL_ON)
 	`uvm_field_int(awaddr, UVM_ALL_ON)

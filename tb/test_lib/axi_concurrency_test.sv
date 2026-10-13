@@ -10,24 +10,22 @@ class axi_concurrency_test extends axi_base_test;
 		super.run_phase(phase);
 		phase.raise_objection(this);
 
+		repeat(1500) @(posedge env_o.agt[0].drv.axi_vif.clk);
+
   		for (int i = 0; i < 5; i++) begin
     			cseq = axi_concurrent_sequence::type_id::create("cseq");
-    			cseq.awaddr = 32'h12; 
-			cseq.awlen = 8'd3; 
-			cseq.araddr = 32'h12; 
-			cseq.aresetn = 1;
-    			cseq.start(env_o.agt[0].seqr);
- 			cseq.awaddr = 32'h10; 
-			cseq.awlen = 8'd4; 
-			cseq.araddr = 32'h10; 
-			cseq.aresetn = 1;
-			cseq.start(env_o.agt[2].seqr);
+ 			cseq.awaddr = BASE0+ (i*4+ 64'h40); 
+			cseq.awlen = 8'd0;
+		   	cseq.awsize=3'd2;	
+			cseq.araddr = BASE0+ (i*4+64'h36);
+			cseq.arlen=8'd0;	
+			cseq.arsize=3'd2;
+			cseq.start(env_o.agt[0].seqr);
   		end
 
-  		
-		repeat (5) @(posedge env_o.agt[0].drv.axi_vif.clk);   //delay
-
- 		 `uvm_info(get_full_name(), "AFTER RUN PHASE OF DUMMY TEST", UVM_LOW);
+		
+		repeat(2500) @(posedge env_o.agt[0].drv.axi_vif.clk);
+ 		 `uvm_info(get_full_name(), "AFTER RUN PHASE OF CONCURRENCY TEST", UVM_LOW);
   		phase.drop_objection(this);
 	endtask
 endclass

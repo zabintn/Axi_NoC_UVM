@@ -10,10 +10,9 @@ class axi_reset_sequence extends axi_base_sequence;
 		super.body();
                 rs=axi_seq_item::type_id::create("rs");
 		start_item(rs);
-		rs.randomize with {
-			aresetn== 1'b0;
-			};
-                finish_item(rs);
+		rs.aresetn= 1'b0;
+                rs.axi_op= 1'b0;
+		finish_item(rs);
                 rs.print();
         endtask
 endclass 

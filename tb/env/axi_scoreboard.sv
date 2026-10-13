@@ -5,7 +5,8 @@ class axi_scoreboard extends uvm_scoreboard;
 
 	//analysis port declarations	
 	axi_seq_item act_q[$];
-	axi_seq_item exp_q[bit [ID_WIDTH-1:0]][$];
+	axi_seq_item exp_wr_q[bit [ID_WIDTH-1:0]][$];
+	axi_seq_item exp_rd_q[bit [ID_WIDTH-1:0]][$];
         bit [DATA_WIDTH-1:0] expected_mem [bit[ADDR_WIDTH-1:0]];
 	int pass_count=0;
 	int fail_count=0;
@@ -42,7 +43,11 @@ class axi_scoreboard extends uvm_scoreboard;
 
 	function void write_exp(axi_seq_item req);
 		`uvm_info(get_full_name(), "INSIDE SCOREBOARD WRITE FUNCTION", UVM_MEDIUM);
-		exp_q[req.awid].push_back(req);
+		if(req.axi_op==0)
+			exp_wr_q[req.awid].push_back(req);
+		else
+			exp_rd_q[req.arid].push_back(req);
+			
 		`uvm_info(get_full_name(), $sformatf("awid=%0h awaddr=%0h", req.awid, req.awaddr), UVM_MEDIUM);
 	endfunction
 	task run_phase(uvm_phase phase);
@@ -56,30 +61,38 @@ class axi_scoreboard extends uvm_scoreboard;
 					for (int i=0; i<(sb_item.awlen+1); i++) begin
 						case(sb_item.awburst)
 							2'b00: begin
-								expected_mem[sb_item.awaddr]=sb_item.wdata[i];
+								mem_write(sb_item.awaddr, sb_item.wdata[i], sb_item.wstrb[i]);
 								`uvm_info(get_full_name(), $sformatf("MASTER %0d MEMORY WRITE=%0h", sb_item.master_id, expected_mem[sb_item.awaddr]), UVM_LOW)
 							end
 							2'b01: begin
-								expected_mem[sb_item.awaddr+i*(1<<sb_item.awsize)]=sb_item.wdata[i];
+								mem_write(sb_item.awaddr+i*(1<<sb_item.awsize), sb_item.wdata[i], sb_item.wstrb[i]);
 								`uvm_info(get_full_name(), $sformatf("MASTER %0d MEMORY WRITE=%0h", sb_item.master_id, expected_mem[sb_item.awaddr+i*(1<<sb_item.awsize)]), UVM_LOW)
 								end
 							2'b10: begin
 								int num_bytes   = 1 << sb_item.awsize;
 								int total_bytes = num_bytes * (sb_item.awlen + 1);
-								int wrap_lo = (sb_item.awaddr / total_bytes) * total_bytes;
-								int addr    = sb_item.awaddr + i * num_bytes;
+								longint unsigned wrap_lo = (sb_item.awaddr / total_bytes) * total_bytes;
+								longint unsigned addr    = sb_item.awaddr + i * num_bytes;
 								if (addr >= wrap_lo + total_bytes)
                								addr -= total_bytes;
-
-        							expected_mem[addr] = sb_item.wdata[i];
+								mem_write(addr, sb_item.wdata[i], sb_item.wstrb[i]);
 								`uvm_info(get_full_name(), $sformatf("MASTER %0d MEMORY WRITE=%0h", sb_item.master_id, expected_mem[addr]), UVM_LOW)
 								end
 						endcase	
 					end
-						write_check(sb_item);
+					fork 
+						automatic axi_seq_item t=sb_item;
+						write_check(t);
+					join_none
 				end
-				else
-					read_check(sb_item);
+				else begin
+					fork
+						automatic axi_seq_item x=sb_item;
+						`uvm_info(get_full_name(), "BEFORE READ CHECK", UVM_MEDIUM)
+						read_check(x);
+						`uvm_info(get_full_name(), "AFTER READ CHECK", UVM_MEDIUM)
+					join_none
+					end
 			end
 		
 		if(fail_count==0)
@@ -95,31 +108,32 @@ class axi_scoreboard extends uvm_scoreboard;
 			pass_count++;
 			`uvm_info(get_full_name(), $sformatf("SCOREBOARD MATCH: %s, EXPECTED=%s, ACTUAL=%s", name, exp_s, act_s), UVM_MEDIUM);
 		end
-		else
-
+		else begin
+			fail_count++;
 			`uvm_info(get_full_name(), $sformatf("SCOREBOARD MISMATCH: %s, EXPECTED=%s, ACTUAL=%s", name, exp_s, act_s), UVM_MEDIUM);
+		end
 	endfunction
 
 	task write_check(axi_seq_item sb_item);
 		axi_seq_item exp;
 		int id;
 		id=sb_item.awid;
-		wait (exp_q.exists(id) && exp_q[id].size() > 0);
-		exp=exp_q[sb_item.awid].pop_front();	
+		wait (exp_wr_q.exists(id) && exp_wr_q[id].size() > 0);
+		exp=exp_wr_q[sb_item.awid].pop_front();	
 		check_cond(sb_item.bresp==exp.bresp, $sformatf(" MASTER %0d BRESP (WRITE RESPONSE)", sb_item.master_id), $sformatf("%0b", exp.bresp), $sformatf("%0b", sb_item.bresp));
 		
 	endtask
 
 	task read_check(axi_seq_item sb_item);
-		int unsigned num_bytes = 1 << sb_item.arsize;
 		longint unsigned addr;
 		bit [DATA_WIDTH-1:0] exp_data;
+		int unsigned num_bytes;
 		axi_seq_item exp;
 		int id;
 		id=sb_item.arid;
-		wait (exp_q.exists(id) && exp_q[id].size() > 0);
-		exp=exp_q[sb_item.arid].pop_front();
-
+		wait (exp_rd_q.exists(id) && exp_rd_q[id].size() > 0);
+		exp=exp_rd_q[id].pop_front();
+		num_bytes = 1 << exp.arsize;
 
 		for(int i=0; i<(sb_item.arlen + 1); i++) begin
 			`uvm_info(get_full_name(), $sformatf("rdata=%0h", sb_item.rdata[i]), UVM_MEDIUM)
@@ -142,10 +156,16 @@ class axi_scoreboard extends uvm_scoreboard;
 
 			exp_data = expected_mem.exists(addr) ? expected_mem[addr] : '0;
 			
-			check_cond(sb_item.rdata[i]==exp_data,  $sformatf("MASTER %0d READ DATA BEAT AT ADDRESS %0h", sb_item.master_id, addr), $sformatf("exp=%0h", exp_data), $sformatf("%0h",  sb_item.rdata[i]));
+			check_cond(sb_item.rdata[i]==exp_data,  $sformatf("MASTER %0d READ DATA BEAT AT ADDRESS %0h", sb_item.master_id, addr), $sformatf("%0h", exp_data), $sformatf("%0h",  sb_item.rdata[i]));
 
 		end
 	endtask
+
+	function void mem_write(bit [ADDR_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] d, bit [DATA_WIDTH/8-1:0] s);
+        if (!expected_mem.exists(a)) expected_mem[a] = '0;
+        for (int b = 0; b < DATA_WIDTH/8; b++)
+                if (s[b]) expected_mem[a][8*b +: 8] = d[8*b +: 8];
+	endfunction
 
 	function void check_phase(uvm_phase phase);
         super.check_phase(phase);

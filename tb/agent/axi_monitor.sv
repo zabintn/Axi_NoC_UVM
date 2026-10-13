@@ -41,11 +41,12 @@ class axi_monitor extends uvm_monitor;
 			@(posedge axi_vif.clk);
 		end while ((axi_vif.awvalid && axi_vif.awready) !== 1);
 			`uvm_info (get_full_name(), "AW VALID READY HANDSHAKE", UVM_LOW);
-			mon_item.awaddr<=axi_vif.awaddr;
-			mon_item.awid<=axi_vif.awid;
-			mon_item.awlen<=axi_vif.awlen;
-			mon_item.awsize<=axi_vif.awsize;
-			mon_item.awburst<=axi_vif.awburst;	
+			mon_item.awaddr=axi_vif.awaddr;
+			mon_item.awid=axi_vif.awid;
+			mon_item.awlen=axi_vif.awlen;
+			mon_item.awsize=axi_vif.awsize;
+			mon_item.awburst=axi_vif.awburst;	
+		
 		end
 	endtask
 
@@ -71,7 +72,8 @@ class axi_monitor extends uvm_monitor;
 			beat_cnt++;
 		end
 		mon_item.wdata=wdata_q;
-		mon_item.wstrb=wstrb_q;	
+		mon_item.wstrb=wstrb_q;
+		mon_item.master_id=master_id;
 		`uvm_info(get_full_name(), $sformatf("MONITOR WDATA=%0p", mon_item.wdata), UVM_LOW);
 	end	
 	endtask
@@ -81,23 +83,26 @@ class axi_monitor extends uvm_monitor;
 			@(posedge axi_vif.clk);
 		end while ((axi_vif.arvalid && axi_vif.arready) !== 1);
 			`uvm_info (get_full_name(), "AR VALID READY HANDSHAKE", UVM_LOW);
-			mon_item.araddr<=axi_vif.araddr;
-			mon_item.arid<=axi_vif.arid;
-			mon_item.arlen<=axi_vif.arlen;
-			mon_item.arsize<=axi_vif.arsize;
-			mon_item.arburst<=axi_vif.arburst;
+			mon_item.araddr=axi_vif.araddr;
+			mon_item.arid=axi_vif.arid;
+			mon_item.arlen=axi_vif.arlen;
+			mon_item.arsize=axi_vif.arsize;
+			mon_item.arburst=axi_vif.arburst;
 		end
 	endtask
 	task capture_b();
+		axi_seq_item tr;	
 		forever begin
 			do begin
 				@(posedge axi_vif.clk);
 			end while ((axi_vif.bvalid && axi_vif.bready) !== 1);
 			`uvm_info(get_full_name(), "B VALID READY HANDSHAKE", UVM_LOW);
-			mon_item.bid<=axi_vif.bid;
-			mon_item.bresp<=axi_vif.bresp;
+			mon_item.bid=axi_vif.bid;
+			mon_item.bresp=axi_vif.bresp;
 			mon_item.master_id=master_id;
-			item_collect_port.write(mon_item);
+			mon_item.axi_op=0;
+			$cast(tr, mon_item.clone());
+			item_collect_port.write(tr);
 		end
 	endtask
 	
@@ -118,7 +123,7 @@ class axi_monitor extends uvm_monitor;
 			end while ((axi_vif.rvalid && axi_vif.rready) !== 1);
 			`uvm_info (get_full_name(), $sformatf("R VALID READY HANDSHAKE BEAT=%0d", beat_cnt), UVM_LOW);
 			rdata_q.push_back(axi_vif.rdata);
-			rresp_q.push_back(axi_vif.rlast);
+			rresp_q.push_back(axi_vif.rresp);
 			rlast_seen=axi_vif.rlast;
 			beat_cnt++;
 		end
@@ -126,6 +131,7 @@ class axi_monitor extends uvm_monitor;
 		mon_item.rdata=rdata_q;
 		mon_item.rresp=rresp_q;
 		mon_item.master_id=master_id;
+		mon_item.axi_op=1;
 		item_collect_port.write(mon_item);
 		`uvm_info(get_full_name(), $sformatf("MONITOR RDATA=%0h", mon_item.rdata), UVM_LOW)
 	end	

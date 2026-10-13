@@ -82,7 +82,7 @@ class axi_driver extends uvm_driver#(axi_seq_item);
 		forever begin
 			axi_seq_item req;
 			int num_beats;
-			int w_got_ready=0;
+			int w_got_ready;
 
 			wait (w_q.size()>0);
 			req= w_q.pop_back();	
@@ -90,6 +90,7 @@ class axi_driver extends uvm_driver#(axi_seq_item);
 			`uvm_info(get_type_name(), "INITIATING W CHANNEL", UVM_LOW);
 			
 			for(int i=0; i<num_beats; i++) begin
+				w_got_ready=0;
 				axi_vif.wdata <= req.wdata[i];
 				axi_vif.wstrb <= req.wstrb[i];
 				axi_vif.wlast <= (i== num_beats-1);
@@ -196,8 +197,6 @@ class axi_driver extends uvm_driver#(axi_seq_item);
 		join_none
 	endtask
 	task mid_reset;
-	wait (outstanding_wr == 0 && outstanding_rd == 0); //get rid of this and the clock line for a MID RESET TEST
-  	@(posedge axi_vif.clk);	
 		if(chan_p != null && chan_p.status() != process::FINISHED) begin
 			chan_p.kill();
 		end

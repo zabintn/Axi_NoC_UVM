@@ -1,6 +1,7 @@
 package axi_test_pkg;
 	`include "uvm_macros.svh"
 	import uvm_pkg::*;
+	import axi_param_pkg::*;
 	import axi_seq_lib_pkg::*;
 	import axi_agent_pkg::*;
 	import axi_env_pkg::*;
@@ -16,5 +17,7 @@ package axi_test_pkg;
 	`include "../test_lib/axi_incr_burst_read_test.sv"
 	`include "../test_lib/axi_wrap_burst_read_test.sv"
 	`include "../test_lib/axi_concurrency_test.sv"
+	`include "../test_lib/axi_per_master_test.sv"
+	`include "../test_lib/axi_all_addr_rd_wr_test.sv"
 	`include "../test_lib/axi_dummy_test.sv"
 endpackage

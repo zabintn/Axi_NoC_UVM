@@ -40,6 +40,14 @@ class axi_functional_coverage extends uvm_subscriber #(axi_seq_item);
 			bins high = {1};
 			bins low = {0};
 			}
+		cp_awlen: coverpoint req.awlen {
+			bins no_fixed_len= {[8'h10:8'hFF]};
+			bins wrap= {8'h01, 8'h03, 8'h07, 8'h0F};
+			}
+		cp_arlen: coverpoint req.arlen {
+			bins no_fixed_len= {[8'h10:8'hFF]};
+			bins wrap= {8'h01, 8'h03, 8'h07, 8'h0F};
+			}
 		cx_aw_handshake: cross cp_awready, cp_awvalid {
 			bins handshake = binsof(cp_awready.high) && binsof(cp_awvalid.low);
 			}
@@ -86,6 +94,14 @@ class axi_functional_coverage extends uvm_subscriber #(axi_seq_item);
 			}
 		cx_ar_handshake: cross cp_arready, cp_arvalid {
 			bins handshake = binsof(cp_arready.high) && binsof(cp_arvalid.high);
+			}
+		cx_illegal_burst_wr: cross cp_wr_burst, cp_awlen {
+			illegal_bins fixed= binsof(cp_wr_burst.fixed) && binsof(cp_awlen.no_fixed_len);
+			illegal_bins wrap= binsof(cp_wr_burst.wrap) && !binsof(cp_awlen.wrap);
+			}
+		cx_illegal_burst_rd: cross cp_rd_burst, cp_arlen {
+			illegal_bins fixed= binsof(cp_rd_burst.fixed) && binsof(cp_arlen.no_fixed_len);
+			illegal_bins wrap= binsof(cp_rd_burst.wrap) && !binsof(cp_arlen.wrap);
 			}
 
 	endgroup

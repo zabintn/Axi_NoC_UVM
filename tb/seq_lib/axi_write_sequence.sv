@@ -14,7 +14,6 @@ class axi_write_sequence extends axi_base_sequence;
                 req=axi_seq_item::type_id::create("req");
 		start_item(req);
 		req.randomize with {
-			aresetn==1;
                         axi_op ==0;
                         awaddr == local::awaddr;
 			awsize == local::awsize;

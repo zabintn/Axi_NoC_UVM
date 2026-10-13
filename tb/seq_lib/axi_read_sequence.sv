@@ -16,8 +16,7 @@ class axi_read_sequence extends axi_base_sequence;
                 rd=axi_seq_item::type_id::create("rd");
 		start_item(rd);
 		rd.randomize with {
-			aresetn== 1;
-                        axi_op == 1;
+			axi_op == 1;
                         araddr == local::araddr;
 			arlen == local::arlen;
 			arburst == local::arburst;

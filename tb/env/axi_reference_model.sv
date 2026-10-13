@@ -49,7 +49,7 @@ class axi_reference_model extends uvm_component;
 	task write_addr_decode(axi_seq_item ref_item);
 		axi_seq_item exp_item;
 		$cast(exp_item, ref_item.clone());	
-		if (ref_item.awaddr>ADDRESS_CEIL) begin
+		if (ref_item.awaddr>TOP1 || ref_item.awaddr<BASE0) begin
 			exp_item.bresp=2'b11;
 		end
 		else begin		
@@ -63,7 +63,7 @@ class axi_reference_model extends uvm_component;
 		axi_seq_item exp_item;
 		$cast(exp_item, ref_item.clone());
 		for(int i=0; i< (ref_item.arlen + 1); i++) begin 	
-			if (ref_item.araddr>ADDRESS_CEIL) begin
+			if (ref_item.araddr>TOP1 || ref_item.araddr < BASE0) begin
 				exp_item.rresp[i]=2'b11;
 			end
 			else begin		
