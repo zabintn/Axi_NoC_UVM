@@ -38,7 +38,6 @@ class axi_seq_item extends uvm_sequence_item;
 
 
 	 localparam bit [2:0] MAX_SIZE = $clog2(DATA_WIDTH/8);
-constraint c_sz { awsize <= 2; arsize <= 2; }
 	constraint rsv_wr_burst { awburst!= 2'b11; }
 	constraint rsv_rd_burst { arburst!= 2'b11; }
 	constraint fixed_burst_len {if (awburst==2'b00)	

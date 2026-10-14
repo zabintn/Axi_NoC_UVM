@@ -25,6 +25,35 @@ for(genvar i=0; i<MASTER_NUM; i++) begin
 		uvm_config_db#(virtual axi_if) :: set(uvm_root :: get(), $sformatf("uvm_test_top.env_o.agt[%0d].*", i), "vif", axi_vif[i]);
 		uvm_config_db#(int) :: set(uvm_root :: get(), $sformatf("uvm_test_top.env_o.agt[%0d].*", i), "master_id", i);
 	end
+
+	axi_assertion_module inst( .clk(axi_vif[i].clk),
+		.aresetn(axi_vif[i].aresetn),
+		.awvalid(axi_vif[i].awvalid),
+		.awid(axi_vif[i].awid),
+		.awaddr(axi_vif[i].awaddr),
+		.awlen(axi_vif[i].awlen),
+		.awsize(axi_vif[i].awsize),
+		.awburst(axi_vif[i].awburst),
+		.awready(axi_vif[i].awready),
+		.wvalid(axi_vif[i].wvalid),
+		.wready(axi_vif[i].wready),
+		.wdata(axi_vif[i].wdata),
+		.wlast(axi_vif[i].wlast),
+		.wstrb(axi_vif[i].wstrb),
+		.bvalid(axi_vif[i].bvalid),
+		.arvalid(axi_vif[i].arvalid),
+		.arid(axi_vif[i].arid),
+		.arready(axi_vif[i].arready),
+		.araddr(axi_vif[i].araddr),
+		.arlen(axi_vif[i].arlen),
+		.arsize(axi_vif[i].arsize),
+		.arburst(axi_vif[i].arburst),
+		.rvalid(axi_vif[i].rvalid),
+		.rready(axi_vif[i].rready),
+		.rlast(axi_vif[i].rlast),
+		.rresp(axi_vif[i].rresp),
+		.rdata(axi_vif[i].rdata)
+		);
 end
 
 	axi_noc_wrapper_sim_wrapper DUT (

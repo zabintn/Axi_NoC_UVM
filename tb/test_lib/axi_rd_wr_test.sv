@@ -45,7 +45,7 @@ class axi_rd_wr_test extends axi_base_test;
         repeat (1500) @(posedge vif.clk);
 
         wseq = axi_write_sequence::type_id::create("wseq");
-        wseq.awaddr  = BASE0;
+        wseq.awaddr  = BASE0+64'd4;
         wseq.awlen   = 8'd0;
         wseq.awsize  = 3'd2;
         wseq.awburst = 2'b01;
@@ -62,11 +62,11 @@ class axi_rd_wr_test extends axi_base_test;
         repeat (10) @(posedge vif.clk);   // margin for the BRAM write to settle
 
         rseq = axi_read_sequence::type_id::create("rseq");
-        rseq.araddr  = BASE0;
+        rseq.araddr  = BASE0+64'd4;
         rseq.arlen   = 8'd0;
         rseq.arsize  = 3'd2;
         rseq.arburst = 2'b01;
-        rseq.start(env_o.agt[1].seqr);
+        rseq.start(env_o.agt[0].seqr);
 
         repeat (2000) @(posedge vif.clk);   // let R come back
         `uvm_info(get_full_name(), "AFTER RUN PHASE OF WRITE READ TEST", UVM_LOW)
