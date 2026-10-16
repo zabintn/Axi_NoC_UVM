@@ -56,7 +56,7 @@ for(genvar i=0; i<MASTER_NUM; i++) begin
 		);
 end
 
-	axi_noc_wrapper_sim_wrapper DUT (
+	noc_wrapper_sim_wrapper DUT (
 		.axi_clk_in_0_0(clk),
 		.axi_rst_in_0_n_0 (axi_vif[0].aresetn),
 		.S00_AXI_0_araddr(axi_vif[0].araddr),

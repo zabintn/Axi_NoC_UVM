@@ -177,6 +177,6 @@ class axi_scoreboard extends uvm_scoreboard;
 	
 	function void report_phase(uvm_phase phase);
         super.report_phase(phase);
-        `uvm_info(get_full_name(), $sformatf("PASS=%0d, FAIL=%0d", pass, fail), UVM_LOW)
+        `uvm_info(get_full_name(), $sformatf("PASS=%0d, FAIL=%0d", pass_count, fail_count), UVM_LOW)
 	endfunction
 endclass

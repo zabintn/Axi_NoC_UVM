@@ -45,9 +45,9 @@ class axi_rd_wr_test extends axi_base_test;
         repeat (1500) @(posedge vif.clk);
 
         wseq = axi_write_sequence::type_id::create("wseq");
-        wseq.awaddr  = BASE0+64'd4;
+        wseq.awaddr  = BASE0;
         wseq.awlen   = 8'd0;
-        wseq.awsize  = 3'd2;
+        wseq.awsize  = 3'd3;
         wseq.awburst = 2'b01;
         wseq.start(env_o.agt[0].seqr);
 
@@ -62,9 +62,9 @@ class axi_rd_wr_test extends axi_base_test;
         repeat (10) @(posedge vif.clk);   // margin for the BRAM write to settle
 
         rseq = axi_read_sequence::type_id::create("rseq");
-        rseq.araddr  = BASE0+64'd4;
+        rseq.araddr  = BASE0;
         rseq.arlen   = 8'd0;
-        rseq.arsize  = 3'd2;
+        rseq.arsize  = 3'd3;
         rseq.arburst = 2'b01;
         rseq.start(env_o.agt[0].seqr);
 

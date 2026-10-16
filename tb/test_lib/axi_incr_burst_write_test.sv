@@ -20,7 +20,7 @@ class axi_incr_burst_write_test extends axi_base_test;
     		wseq = axi_write_sequence::type_id::create("wseq");
     		wseq.awaddr = BASE0; 
 		wseq.awlen = 8'd4;
-		wseq.awsize = 3'd2;
+		wseq.awsize = 3'd3;
 		wseq.awburst= 2'b01;
     		wseq.start(env_o.agt[0].seqr);
 		
@@ -37,7 +37,7 @@ class axi_incr_burst_write_test extends axi_base_test;
         	rseq = axi_read_sequence::type_id::create("rseq");
         	rseq.araddr  = BASE0;
         	rseq.arlen   = 8'd4;
-        	rseq.arsize  = 3'd2;
+        	rseq.arsize  = 3'd3;
         	rseq.arburst = 2'b01;
         	rseq.start(env_o.agt[0].seqr);
 

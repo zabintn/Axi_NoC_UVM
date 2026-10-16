@@ -1,0 +1,5 @@
+cov_db/xsim.covdb/axi_fixed_burst_write_test_run1/xsim.covinfo
+cov_db/xsim.covdb/axi_incr_burst_write_test_run1/xsim.covinfo
+cov_db/xsim.covdb/axi_rd_wr_test_run1/xsim.covinfo
+cov_db/xsim.covdb/axi_wrap_burst_write_test_run1/xsim.covinfo
+cov_db/xsim.covdb/axi_write_test_run1/xsim.covinfo

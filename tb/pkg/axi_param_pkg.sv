@@ -1,6 +1,6 @@
 package axi_param_pkg;
 
-	parameter int DATA_WIDTH=32;
+	parameter int DATA_WIDTH=64;
 	parameter int ADDR_WIDTH=64;
 	parameter int ID_WIDTH=2;
 	parameter int LEN_WIDTH  = 8;

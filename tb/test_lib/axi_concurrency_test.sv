@@ -16,10 +16,10 @@ class axi_concurrency_test extends axi_base_test;
     			cseq = axi_concurrent_sequence::type_id::create("cseq");
  			cseq.awaddr = BASE0+ (i*4+ 64'h40); 
 			cseq.awlen = 8'd0;
-		   	cseq.awsize=3'd2;	
+		   	cseq.awsize=3'd3;	
 			cseq.araddr = BASE0+ (i*4+64'h36);
 			cseq.arlen=8'd0;	
-			cseq.arsize=3'd2;
+			cseq.arsize=3'd3;
 			cseq.start(env_o.agt[0].seqr);
   		end
 

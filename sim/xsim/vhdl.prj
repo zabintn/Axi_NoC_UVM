@@ -1,0 +1,6 @@
+vhdl xil_defaultlib  \
+"../../../AXI_NoC/axi_noc/axi_noc.gen/sources_1/bd/axi_noc/ip/axi_noc_axi_bram_ctrl_0_0/sim/axi_noc_axi_bram_ctrl_0_0.vhd" \
+"../../../AXI_NoC/axi_noc/axi_noc.gen/sources_1/bd/axi_noc/ip/axi_noc_axi_bram_ctrl_1_0/sim/axi_noc_axi_bram_ctrl_1_0.vhd" \
+
+# Do not sort compile order
+nosort
